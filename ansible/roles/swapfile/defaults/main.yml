@@ -1,4 +1,4 @@
 ---
 # defaults file for swapfile
-swap_size: 512MB
+swap_size: 128MB
 swap_file: /swapfile
