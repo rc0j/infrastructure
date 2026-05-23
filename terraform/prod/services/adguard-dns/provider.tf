@@ -8,7 +8,7 @@ terraform {
 }
 
 provider "adguard" {
-  host     = "192.168.100.5"
+  host     = "192.168.100.97"
   username = "admin"
   password = var.adguard_admin_password # This password is stored in secrets.tfvars and should not be committed to GIT EVER.
   scheme   = "http"
