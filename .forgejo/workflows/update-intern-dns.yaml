@@ -1,0 +1,40 @@
+name: Update AdGuard DNS
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'terraform/prod/services/adguard-dns/**'
+
+jobs:
+  terraform:
+    runs-on: docker
+    container:
+      image: node:trixie # pulled manually due to some weird permission issues ??? #TODO FIX THIS!
+
+    defaults:
+      run:
+        working-directory: terraform/prod/services/adguard-dns
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Terraform
+        run: |
+          apt-get update && apt-get install -y gnupg curl
+          curl -fsSL https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+          echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com trixie main" | tee /etc/apt/sources.list.d/hashicorp.list
+          apt-get update && apt-get install terraform
+
+      - name: Create secrets.tfvars
+        run: |
+          echo 'adguard_admin_password = "${{ secrets.ADGUARD_ADMIN_PASSWORD }}"' > secrets.tfvars
+
+      - name: Terraform Init
+        run: terraform init -input=false
+
+      - name: Terraform Plan
+        run: terraform plan -var-file="secrets.tfvars"
+
+      - name: Terraform apply
+        run: terraform apply -auto-approve -input=false -var-file="secrets.tfvars"
