@@ -6,3 +6,14 @@
 *.ansible
 *.DS_Store
 secrets.tfvars
+*.tfvars
+*.tfvars.json
+*.log
+*.backup
+*.bak
+*.tmp
+*.tfstate.backup
+*.tfstate.*
+*.tfvars.backup
+*.tfvars.*
+*.tfvars.json.backup

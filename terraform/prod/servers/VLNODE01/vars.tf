@@ -27,7 +27,7 @@ variable "cores" {
 
 variable "description" {
     type = string
-    default = "This VM is created and is managed by Terraform. Any manual changes to this VM may be overwritten by Terraform during the next apply."
+    default = "Deployed & managed by Terraform"
 }
 
 variable "ipconfig0" {

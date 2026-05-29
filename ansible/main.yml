@@ -8,8 +8,6 @@
       tags: ssh
     - role: system_tweaks
       tags: system_tweaks
-    - role: minimal_packages
-      tags: minimal_packages
     - role: bashrc
       tags: bashrc
     - role: swapfile
@@ -27,3 +25,5 @@
       tags: never, backup_proxmox
     - role: syncthing
       tags: syncthing
+    - role: minimal_packages
+      tags: never,minimal_packages
