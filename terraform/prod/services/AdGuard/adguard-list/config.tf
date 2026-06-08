@@ -2,9 +2,9 @@
 # Blacklist config
 ###########
 resource "adguard_list_filter" "my_blocklists" {
-  name    = "My Custom Blocklists (Managed by tf)"
+  name    = "OISD Blocklist Big (Managed by tf)"
   enabled = true
-  url     = "https://codeberg.org/hagezi/mirror2/raw/branch/main/dns-blocklists/adblock/pro.plus.txt"
+  url     = "https://big.oisd.nl"
 }
 
 resource "adguard_list_filter" "filter_61" {
