@@ -1,6 +1,6 @@
 name: adguard_dns_update
 
-"on":
+on:
   push:
     branches:
       - main
