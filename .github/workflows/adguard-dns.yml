@@ -1,11 +1,9 @@
 name: adguard_dns_update
 
-"on":
+on:
   push:
     branches:
       - main
-    paths:
-      - 'terraform/prod/services/AdGuard/adguard-dns/**/*'
 
 jobs:
   plan_adguard_dns:
