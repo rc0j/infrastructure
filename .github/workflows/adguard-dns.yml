@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'terraform/prod/services/AdGuard/adguard-list/**/*'
 
 jobs:
   plan_adguard_dns:
