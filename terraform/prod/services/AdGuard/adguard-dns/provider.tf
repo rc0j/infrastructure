@@ -6,7 +6,7 @@ terraform {
   required_providers {
     adguard = {
       source  = "gmichels/adguard"
-      version = ">= 1.6.2"
+      version = ">= 1.7.0"
     }
   }
 }
@@ -18,9 +18,4 @@ provider "adguard" {
   scheme   = "http"
   timeout  = 5 
   insecure = false 
-}
-
-variable "adguard_admin_password" {
-  type        = string
-  description = "Admin password to login to AdguardHome."
 }
