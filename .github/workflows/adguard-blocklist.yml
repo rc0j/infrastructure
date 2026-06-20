@@ -1,6 +1,6 @@
-name: AdGuard Blocklist Deployment
+name: adguard_blocklist
 
-on:
+"on":
   push:
     branches:
       - main
@@ -19,12 +19,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: "latest"
-          terraform_wrapper: false
-
+      # Using your host native terraform binary safely
       - name: Terraform Init
         run: |
           cd ${{ env.TF_DIR }}
@@ -36,7 +31,6 @@ jobs:
           terraform plan -refresh-only -detailed-exitcode || DRIFT_EXIT_CODE=$?
           terraform plan -out=tfplan
 
-      # Save the tfplan binary so the deploy job can access it
       - name: Upload Plan Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -55,13 +49,6 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: "latest"
-          terraform_wrapper: false
-
-      # Pull the tfplan binary generated in the previous stage
       - name: Download Plan Artifact
         uses: actions/download-artifact@v4
         with:
@@ -71,5 +58,4 @@ jobs:
       - name: Terraform Apply
         run: |
           cd ${{ env.TF_DIR }}
-          terraform init -input=false
           terraform apply -input=false tfplan
