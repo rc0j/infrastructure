@@ -6,7 +6,7 @@ terraform {
   required_providers {
     adguard = {
       source  = "gmichels/adguard"
-      version = ">= 1.7.0"
+      version = ">= 1.7.0" # testing 1.7.0 else i will revert to previous 1.6
     }
   }
 }
