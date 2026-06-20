@@ -6,8 +6,8 @@ on:
       - main
 
 jobs:
-  plan_adguard_dns:
-    name: tf_plan
+  update_adguard_dns:
+    name: pull image
     runs-on: self-hosted
     container:
       image: hashicorp/terraform:latest
@@ -27,42 +27,14 @@ jobs:
           cd ${{ env.TF_DIR }}
           terraform init -input=false
 
+      # Optional: Keeps your drift detection safely working inside the same execution block
       - name: Terraform Plan
         run: |
           cd ${{ env.TF_DIR }}
           terraform plan -refresh-only -detailed-exitcode || DRIFT_EXIT_CODE=$?
-          terraform plan -out=tfplan
-
-      - name: Upload Plan Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: tfplan-dns
-          path: ${{ env.TF_DIR }}/tfplan
-          retention-days: 1
-
-  apply_adguard_dns:
-    name: tf_apply
-    needs: plan_adguard_dns
-    runs-on: self-hosted
-    container:
-      image: hashicorp/terraform:latest
-      volumes:
-        - /var/local/terraform-state:/opt/terraform-state:rw
-    env:
-      TF_DIR: "terraform/prod/services/AdGuard/adguard-dns"
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Download Plan Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: tfplan-dns
-          path: ${{ env.TF_DIR }}
+          terraform plan -out=tfplan -input=false
 
       - name: Terraform Apply
         run: |
           cd ${{ env.TF_DIR }}
-          terraform init -input=false
           terraform apply -input=false tfplan
