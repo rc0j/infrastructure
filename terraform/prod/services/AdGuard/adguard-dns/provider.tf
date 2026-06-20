@@ -1,6 +1,6 @@
 terraform {
   backend "local" {
-    path = "/var/local/terraform-state/adguard-dns.tfstate"
+    path = "/opt/terraform-state/adguard-dns.tfstate"
   }
 
   required_providers {
