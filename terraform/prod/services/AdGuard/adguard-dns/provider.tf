@@ -1,4 +1,8 @@
 terraform {
+  backend "local" {
+    path = "/var/local/terraform-state/adguard-dns.tfstate"
+  }
+
   required_providers {
     adguard = {
       source  = "gmichels/adguard"
@@ -10,8 +14,13 @@ terraform {
 provider "adguard" {
   host     = "192.168.100.97"
   username = "admin"
-  password = var.adguard_admin_password # This password is stored in secrets.tfvars and should not be committed to GIT EVER.
+  password = var.adguard_admin_password 
   scheme   = "http"
-  timeout  = 5 # for now this is Ok, however we might need to adjust in the future. 
-  insecure = false # not using https, lets connect insecurely.
+  timeout  = 5 
+  insecure = false 
+}
+
+variable "adguard_admin_password" {
+  type        = string
+  description = "Admin password to login to AdguardHome."
 }
