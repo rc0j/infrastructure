@@ -1,4 +1,7 @@
-# Homelab
+
+
+
+# <img src="https://raw.githubusercontent.com/loganmarchione/homelab-svg-assets/refs/heads/main/assets/linux.svg" alt="Alt Text" width="43" height="43"> homelab
 
 🫀 https://youtu.be/yoFTL0Zm3tw?si=L8GFws0YiC2Ms9ER
 
