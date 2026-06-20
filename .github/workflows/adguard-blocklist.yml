@@ -1,0 +1,75 @@
+name: AdGuard Blocklist Deployment
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'terraform/prod/services/AdGuard/adguard-list/**/*'
+
+jobs:
+  plan_adguard_blocklist:
+    name: Terraform Plan (Blocklist)
+    runs-on: self-hosted
+    env:
+      TF_DIR: "terraform/prod/services/AdGuard/adguard-list"
+      TF_VAR_adguard_admin_password: ${{ secrets.ADGUARD_ADMIN_PASSWORD }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "latest"
+          terraform_wrapper: false
+
+      - name: Terraform Init
+        run: |
+          cd ${{ env.TF_DIR }}
+          terraform init -input=false
+
+      - name: Terraform Plan
+        run: |
+          cd ${{ env.TF_DIR }}
+          terraform plan -refresh-only -detailed-exitcode || DRIFT_EXIT_CODE=$?
+          terraform plan -out=tfplan
+
+      # Save the tfplan binary so the deploy job can access it
+      - name: Upload Plan Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan-list
+          path: ${{ env.TF_DIR }}/tfplan
+          retention-days: 1
+
+  apply_adguard_blocklist:
+    name: Terraform Apply (Blocklist)
+    needs: plan_adguard_blocklist
+    runs-on: self-hosted
+    env:
+      TF_DIR: "terraform/prod/services/AdGuard/adguard-list"
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "latest"
+          terraform_wrapper: false
+
+      # Pull the tfplan binary generated in the previous stage
+      - name: Download Plan Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: tfplan-list
+          path: ${{ env.TF_DIR }}
+
+      - name: Terraform Apply
+        run: |
+          cd ${{ env.TF_DIR }}
+          terraform init -input=false
+          terraform apply -input=false tfplan
