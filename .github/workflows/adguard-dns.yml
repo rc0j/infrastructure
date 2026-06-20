@@ -4,10 +4,12 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'terraform/prod/services/AdGuard/adguard-dns/**'
 
 jobs:
   update_adguard_dns:
-    name: pull image
+    name: update_dns_records
     runs-on: self-hosted
     container:
       image: hashicorp/terraform:latest
@@ -27,14 +29,8 @@ jobs:
           cd ${{ env.TF_DIR }}
           terraform init -input=false
 
-      # Optional: Keeps your drift detection safely working inside the same execution block
-      - name: Terraform Plan
+      - name: Terraform Run
         run: |
           cd ${{ env.TF_DIR }}
-          terraform plan -refresh-only -detailed-exitcode || DRIFT_EXIT_CODE=$?
           terraform plan -out=tfplan -input=false
-
-      - name: Terraform Apply
-        run: |
-          cd ${{ env.TF_DIR }}
           terraform apply -input=false tfplan
