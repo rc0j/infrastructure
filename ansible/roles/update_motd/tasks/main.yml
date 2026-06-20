@@ -1,8 +1,19 @@
 ---
-- name: Copy motd
-  ansible.builtin.template:
-    src: motd.j2
+- name: ensure figlet is installed
+  ansible.builtin.package:
+    name: figlet
+    state: present
+
+- name: Generate motd using figlet
+  ansible.builtin.command: "figlet -f slant {{ ansible_hostname }}"
+  register: figlet_output
+  changed_when: false
+
+- name: Create /etc/motd file
+  ansible.builtin.copy:
+    content: "{{ figlet_output.stdout }}"
     dest: /etc/motd
     owner: root
     group: root
-    mode: "0644"
+    mode: '0644'
+

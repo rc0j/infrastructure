@@ -9,7 +9,7 @@
 agentAddress udp:161
 
 # 2. Define who can access SNMP (Centreon server IP only)
-com2sec centreonUser 192.168.100.7 {{ snmpd_community }}
+com2sec centreonUser 192.168.100.102 {{ snmpd_community }}
 
 # 3. Group the security name under SNMPv2c
 group centreonGroup v2c centreonUser

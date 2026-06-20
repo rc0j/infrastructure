@@ -1,13 +1,38 @@
-# SSH Configuration - 2025
-# {{ ansible_managed }}
+# ssh config - prod
 ForwardAgent yes
+# disable but may things a bit less secure. IdentitiesOnly yes
+ServerAliveInterval 60
 User {{ ssh_master_user }}
+
+Host centreon-prod
+    HostName 192.168.100.7
+
+Host centreon-new
+    HostName 192.168.100.7
 
 Host orion
     HostName 192.168.100.20
 
+Host pi
+    HostName 192.168.100.21
+
+Host node01
+    HostName 192.168.100.98
+
+Host bitwarden
+    HostName 192.168.100.99
+
+Host dns
+    HostName 192.168.100.97
+
 Host jellyfin
     HostName 192.168.100.100
 
-Host centreon-prod
-    HostName 192.168.100.7
+Host docker
+    HostName 192.168.100.101
+
+Host orion-node02
+    HostName 192.168.100.122
+
+Host node02
+    HostName 192.168.100.126

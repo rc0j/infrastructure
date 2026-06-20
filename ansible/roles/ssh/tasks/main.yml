@@ -1,4 +1,11 @@
 ---
+- name: Allow cloudinit root user
+  ansible.builtin.lineinfile:
+    path: /etc/cloud/cloud.cfg
+    regexp: "^disable_root: true"
+    line: "disable_root: false"
+  failed_when: false
+
 - name: Create sysmaster group
   ansible.builtin.group:
     name: sysmaster
@@ -51,12 +58,27 @@
     mode: "600"
     backup: true
 
+- name: add .pub files in ssh_authkey_path to authorized_keys
+  ansible.builtin.find:
+    paths: "{{ ssh_authkey_path }}"
+    patterns: "*.pub"
+    file_type: file
+  register: pub_files
+
+- name: Add public keys to authorized_keys
+  ansible.builtin.lineinfile:
+    path: "{{ ssh_authkey_path }}/authorized_keys"
+    line: "{{ item }}"
+    insertafter: "^# Add public keys here"
+  loop: "{{ pub_files.files | map(attribute='path') | list }}"
+  when: pub_files.matched > 0
+
 - name: Copy ssh configuration file
   ansible.builtin.template:
     src: "ssh_config.j2"
     dest: "/etc/ssh/ssh_config.d/homelab.conf"
-    owner: root
-    group: root
+    owner: "{{ ssh_master_user }}"
+    group: "{{ ssh_master_user }}"
     mode: "600"
     backup: true
 

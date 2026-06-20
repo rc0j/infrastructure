@@ -2,3 +2,4 @@
 # defaults file for swapfile
 swap_size: 512MB
 swap_file: /swapfile
+swap_swappiness: 1 # Barely allow swapping, but still allow it incase we are running out of ram.
