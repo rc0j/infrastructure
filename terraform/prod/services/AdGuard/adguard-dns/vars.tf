@@ -1,4 +1,5 @@
-variable adguard_admin_password {
-    type = string
-    description = "Admin password to login to AdguardHome."
-}
+# disabled for now
+#variable adguard_admin_password {
+#    type = string
+#    description = "Admin password to login to AdguardHome."
+#}

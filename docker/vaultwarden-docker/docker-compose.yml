@@ -1,0 +1,15 @@
+services:
+  vaultwarden:
+    image: vaultwarden/server:latest
+    container_name: vaultwarden
+    restart: unless-stopped
+    environment:
+      - DOMAIN=${DOMAIN_URL}
+      - ADMIN_TOKEN=${ADMIN_TOKEN}
+      - PUSH_ENABLED=true
+      - PUSH_INSTALLATION_ID=${INSTALL_ID}
+      - PUSH_INSTALLATION_KEY=${INSTALL_KEY}
+    volumes:
+      - ./vw-data/:/data/
+    ports:
+      - "192.168.100.99:8000:80"

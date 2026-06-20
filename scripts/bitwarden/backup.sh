@@ -26,4 +26,4 @@ export BW_SESSION=$(/usr/local/bin/bw login "$BW_USERNAME" "$BW_PASSWORD" --raw)
 zstd -19 --rm "${backup_dir}/${datestamp}.json" -o "${backup_dir}/${datestamp}.json.zst"
 
 echo "Transfering to syncthing node..."
-rsync -rsvPp "${backup_dir}/${datestamp}.json.zst" root@192.168.100.21:/home/syncthing/bitwarden_backup
+rsync -rsvPp "${backup_dir}/${datestamp}.json.zst" XXX:XX

@@ -1,5 +1,3 @@
-## IMPORTANT: Moved to gitlab: https://gitlab.com/raifcoonjah/infrastructure.git
-
 # Homelab
 
 🫀 https://youtu.be/yoFTL0Zm3tw?si=L8GFws0YiC2Ms9ER
@@ -74,3 +72,7 @@ For my homelab, I use KISS (Keep it simple, stupid!) principle as much as possib
          `"Y$b._
              `""""
 ```
+
+## INFO
+
+I run a bunch of services, non of them are public. Access the homepage: http://127.0.0.1 ;) 

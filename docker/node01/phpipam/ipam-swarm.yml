@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  phpipam-db:
+    image: mariadb:10.11
+    platform: linux/amd64
+    environment:
+      MYSQL_ROOT_PASSWORD: secret_root_pass
+      MYSQL_DATABASE: phpipam
+      MYSQL_USER: phpipam
+      MYSQL_PASSWORD: secret_phpipam_pass
+    volumes:
+      - phpipam_phpipam-db:/var/lib/mysql
+    networks:
+      - swarm-ingress-bridge
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == VLNODE01
+      restart_policy:
+        condition: on-failure
+
+  phpipam-web:
+    image: phpipam/phpipam-www:latest
+    ports:
+      - target: 80
+        published: 8080
+        protocol: tcp
+        mode: host
+    environment:
+      - TZ=Indian/Mauritius
+      - IPAM_DATABASE_HOST=phpipam-db
+      - IPAM_DATABASE_USER=phpipam
+      - IPAM_DATABASE_PASS=secret_phpipam_pass
+      - IPAM_DATABASE_NAME=phpipam
+    volumes:
+      - phpipam_phpipam-logo:/phpipam/css/images/logo
+    networks:
+      - swarm-ingress-bridge
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == VLNODE01
+      restart_policy:
+        condition: on-failure
+
+  phpipam-cron:
+    image: phpipam/phpipam-cron:latest
+    environment:
+      - TZ=Indian/Mauritius
+      - IPAM_DATABASE_HOST=phpipam-db
+      - IPAM_DATABASE_USER=phpipam
+      - IPAM_DATABASE_PASS=secret_phpipam_pass
+      - IPAM_DATABASE_NAME=phpipam
+      - SCAN_INTERVAL=2h
+    networks:
+      - swarm-ingress-bridge
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == VLNODE01
+      restart_policy:
+        condition: on-failure
+
+volumes:
+  phpipam_phpipam-db:
+    external: true
+  phpipam_phpipam-logo:
+    external: true
+
+networks:
+  swarm-ingress-bridge:
+    external: true
