@@ -54,23 +54,24 @@ For my homelab, I use KISS (Keep it simple, stupid!) principle as much as possib
 ```
 
 ```shell
-        _,met$$$$$gg.          root@orion-node02
+        _,met$$$$$gg.          root@orion-nodepi
      ,g$$$$$$$$$$$$$$$P.       -----------------
    ,g$$P""       """Y$$.".     OS: Debian GNU/Linux 13 (trixie) aarch64
   ,$$P'              `$$$.     Host: FriendlyElec NanoPi NEO3
-',$$P       ,ggs.     `$$b:    Kernel: Linux 6.18.7-current-rockchip64
-`d$$'     ,$P"'   .    $$$     Uptime: 5 days, 6 hours, 25 mins
- $$P      d$'     ,    $$P     Packages: 316 (dpkg)
+',$$P       ,ggs.     `$$b:    Kernel: Linux 6.18.34-current-rockchip64
+`d$$'     ,$P"'   .    $$$     Uptime: 5 days, 6 hours, 45 mins
+ $$P      d$'     ,    $$P     Packages: 317 (dpkg)
  $$:      $$.   -    ,d$$'     Shell: bash 5.2.37
  $$;      Y$b._   _,d$P'       Terminal: dropbear
  Y$$.    `.`"Y$$$$P"'          CPU: rk3328 (4) @ 1.30 GHz
- `$$b      "-.__               Memory: 978.41 MiB / 1.93 GiB (50%)
+ `$$b      "-.__               Memory: 645.51 MiB / 1.93 GiB (33%)
   `Y$$b                        Swap: Disabled
-   `Y$$.                       Disk (/): 9.48 GiB / 468.68 GiB (2%) - ext4
+   `Y$$.                       Disk (/): 7.38 GiB / 468.68 GiB (2%) - ext4
      `$$b.                     Local IP (eth0): 192.168.100.21/24
        `Y$$b.                  Locale: C.UTF-8
          `"Y$b._
-             `""""
+             `""""                                     
+                                                       
 ```
 
 ## INFO
