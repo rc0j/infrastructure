@@ -10,6 +10,6 @@ provider "proxmox" {
   endpoint = "https://192.168.100.20:8006/"
   insecure = true
   username = "root@pam"
-  password = "raif2121"
+  password = "var.proxmox_admin_password"
 }
 
