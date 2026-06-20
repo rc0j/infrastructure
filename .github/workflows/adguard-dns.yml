@@ -1,6 +1,6 @@
 name: adguard_dns_update
 
-on:
+"on":
   push:
     branches:
       - main
@@ -9,8 +9,13 @@ on:
 
 jobs:
   plan_adguard_dns:
-    name: Terraform Plan (DNS)
+    name: tf_plan
     runs-on: self-hosted
+    container:
+      image: hashicorp/terraform:latest
+      volumes:
+        - /var/local/terraform-state:/opt/terraform-state:rw
+
     env:
       TF_DIR: "terraform/prod/services/AdGuard/adguard-dns"
       TF_VAR_adguard_admin_password: ${{ secrets.ADGUARD_ADMIN_PASSWORD }}
@@ -19,7 +24,6 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # Removed hashicorp/setup-terraform because your server already has terraform installed
       - name: Terraform Init
         run: |
           cd ${{ env.TF_DIR }}
@@ -39,9 +43,13 @@ jobs:
           retention-days: 1
 
   apply_adguard_dns:
-    name: Terraform Apply (DNS)
+    name: tf_apply
     needs: plan_adguard_dns
     runs-on: self-hosted
+    container:
+      image: hashicorp/terraform:latest
+      volumes:
+        - /var/local/terraform-state:/opt/terraform-state:rw
     env:
       TF_DIR: "terraform/prod/services/AdGuard/adguard-dns"
 
@@ -49,7 +57,6 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # Download the binary plan file directly back into the working directory
       - name: Download Plan Artifact
         uses: actions/download-artifact@v4
         with:
@@ -59,4 +66,5 @@ jobs:
       - name: Terraform Apply
         run: |
           cd ${{ env.TF_DIR }}
+          terraform init -input=false
           terraform apply -input=false tfplan
