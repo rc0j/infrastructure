@@ -1,6 +1,6 @@
 services:
   jellyfin:
-    image: jellyfin/jellyfin:latest
+    image: jellyfin/jellyfin:10.11.11
     container_name: jellyfin
     network_mode: 'host'
     volumes:
@@ -11,8 +11,13 @@ services:
         target: /media
     restart: 'unless-stopped'
     environment:
-      - JELLYFIN_PublishedServerUrl=https://jellyfin.xx.xyz # CHANGE THIS BEFORE PROD
-      - MALLOC_TRIM_THRESHOLD_=100000
+      - JELLYFIN_PublishedServerUrl=${JELLYFIN_DOMAIN}
     # Optional - may be necessary for docker healthcheck to pass if running in host network mode
     extra_hosts:
       - 'host.docker.internal:host-gateway'
+    deploy:
+      resources:
+        limits:
+          memory: 2.1G
+        reservations:
+          memory: 400M
