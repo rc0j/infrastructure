@@ -6,8 +6,6 @@
     # CORE:
     - role: ssh
       tags: ssh
-    - role: system_tweaks
-      tags: system_tweaks
     - role: bashrc
       tags: bashrc
     - role: swapfile
@@ -23,7 +21,7 @@
       tags: never, docker
     - role: backup_proxmox
       tags: never, backup_proxmox
-    - role: syncthing
-      tags: syncthing
+    # - role: syncthing
+    #   tags: never, syncthing
     - role: minimal_packages
       tags: never,minimal_packages
