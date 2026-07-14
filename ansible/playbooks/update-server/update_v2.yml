@@ -5,15 +5,6 @@
     free_space_gb: "1"
 
   tasks:
-    - name: Test DNS resolution for twm.ch
-      ansible.builtin.command: nslookup proxy.core-forge.fyi
-      changed_when: false
-      register: dns_test
-
-    - name: Display DNS test results
-      ansible.builtin.debug:
-        var: dns_test.stdout_lines
-
     - name: Ensure we have enough disk space
       ansible.builtin.assert:
         that:
