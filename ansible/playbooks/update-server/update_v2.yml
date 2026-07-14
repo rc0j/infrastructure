@@ -2,7 +2,7 @@
   hosts: all
   become: true
   vars:
-    free_space_gb: "3"
+    free_space_gb: "1"
 
   tasks:
     - name: Test DNS resolution for twm.ch
