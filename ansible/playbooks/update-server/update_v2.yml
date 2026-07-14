@@ -22,7 +22,6 @@
         success_msg: "Disk space check passed for {{ item }}."
       loop:
         - /
-        - /boot
 
     - name: Update all packages to their latest version
       ansible.builtin.apt:
