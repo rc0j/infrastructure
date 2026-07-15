@@ -1,0 +1,20 @@
+services:
+    semaphore_orion:
+        ports:
+            - 3000:3000
+        image: semaphoreui/semaphore:v2.18.12
+        environment:
+            SEMAPHORE_DB_DIALECT: sqlite
+            SEMAPHORE_ADMIN: db_admin
+            SEMAPHORE_ADMIN_PASSWORD: changeme
+            SEMAPHORE_ADMIN_NAME: Administrator 
+            SEMAPHORE_ADMIN_EMAIL: admin@localhost
+            ANSIBLE_HOST_KEY_CHECKING: "False"
+        volumes:
+            - semaphore_data:/var/lib/semaphore
+            - semaphore_config:/etc/semaphore
+            - semaphore_tmp:/tmp/semaphore
+volumes:
+    semaphore_data:
+    semaphore_config:
+    semaphore_tmp:

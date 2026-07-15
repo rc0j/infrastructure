@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+set -u -o pipefail
+
+TIMEOUT=10
+INSECURE=0
+FILE=""
+URLS=()
+
+while getopts ":f:t:k" opt; do
+  case "$opt" in
+    f) FILE="$OPTARG" ;;
+    t) TIMEOUT="$OPTARG" ;;
+    k) INSECURE=1 ;;
+    *) echo "UNKNOWN: invalid option"; exit 3 ;;
+  esac
+done
+shift $((OPTIND-1))
+
+if [[ -n "${1:-}" ]]; then
+  URLS+=("$@")
+fi
+
+if [[ -n "$FILE" ]]; then
+  [[ -r "$FILE" ]] || { echo "UNKNOWN: cannot read file: $FILE"; exit 3; }
+  while IFS= read -r line; do
+    [[ -z "$line" || "${line:0:1}" == "#" ]] && continue
+    URLS+=("$line")
+  done < "$FILE"
+fi
+
+if (( ${#URLS[@]} == 0 )); then
+  echo "UNKNOWN: no URLs provided"
+  exit 3
+fi
+
+OK_COUNT=0
+CRIT_COUNT=0
+FAILED=()
+
+for URL in "${URLS[@]}"; do
+  if (( INSECURE == 1 )); then
+    OUT="$(curl -s -m "$TIMEOUT" --connect-timeout "$TIMEOUT" -k -o /dev/null -w "%{http_code} %{time_total}" "$URL" 2>/dev/null || echo "000 $TIMEOUT")"
+  else
+    OUT="$(curl -s -m "$TIMEOUT" --connect-timeout "$TIMEOUT" -o /dev/null -w "%{http_code} %{time_total}" "$URL" 2>/dev/null || echo "000 $TIMEOUT")"
+  fi
+  read -r CODE TIME <<< "$OUT"
+  if [[ "$CODE" =~ ^[0-9]{3}$ ]] && (( CODE >= 200 && CODE < 400 )); then
+    ((OK_COUNT++))
+  else
+    ((CRIT_COUNT++))
+    FAILED+=("$URL($CODE)")
+  fi
+done
+
+if (( CRIT_COUNT == 0 )); then
+  echo "OK: All $OK_COUNT URL(s) accessible"
+  exit 0
+else
+  echo "CRITICAL: $CRIT_COUNT URL(s) failed → ${FAILED[*]}"
+  exit 2
+fi

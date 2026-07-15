@@ -1,0 +1,47 @@
+#!/bin/bash
+# Usage: ./check_syncthing_full.sh <host> <port> <api_key>
+
+HOST=$1
+PORT=$2
+API_KEY=$(cat /usr/lib/centreon/plugins/.env_syncthing)
+URL="http://$HOST:$PORT/rest"
+
+# 1. Check if Syncthing is alive
+if ! curl -s -f -H "X-API-Key: $API_KEY" "$URL/noauth/health" > /dev/null; then
+    echo "CRITICAL: Syncthing service is unreachable."
+    exit 2
+fi
+
+# 2. Check for internal errors
+ERRORS=$(curl -s -H "X-API-Key: $API_KEY" "$URL/system/error")
+ERROR_COUNT=$(echo "$ERRORS" | jq '.errors | if . == null then 0 else length end')
+if [ "$ERROR_COUNT" -gt 0 ]; then
+    echo "CRITICAL: Syncthing reports $ERROR_COUNT internal error(s)."
+    exit 2
+fi
+
+# 3. Check for remote device connections
+CONNS=$(curl -s -H "X-API-Key: $API_KEY" "$URL/system/connections")
+ACTIVE_COUNT=$(echo "$CONNS" | jq '[.connections[] | select(.connected == true)] | length')
+if [ "$ACTIVE_COUNT" -eq 0 ]; then
+    echo "WARNING: No remote devices are connected."
+    exit 1
+fi
+
+# 4. Check if any folders are out of sync (need > 0)
+FOLDERS=$(curl -s -H "X-API-Key: $API_KEY" "$URL/config/folders")
+FOLDER_IDS=$(echo "$FOLDERS" | jq -r '.[].id')
+
+for ID in $FOLDER_IDS; do
+    STATUS=$(curl -s -H "X-API-Key: $API_KEY" "$URL/db/status?folder=$ID")
+
+    # Force the value to 0 if it is null, otherwise take the value
+    NEED_BYTES=$(echo "$STATUS" | jq '.need // 0')
+
+    if [ "$NEED_BYTES" -gt 0 ]; then
+        echo "WARNING: Folder '$ID' is out of sync (Needs $NEED_BYTES bytes)."
+        exit 1
+    fi
+done
+echo "OK: Syncthing healthy - $ACTIVE_COUNT devices connected - all folders in sync."
+exit 0

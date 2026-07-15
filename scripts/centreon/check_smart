@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+set -u
+
+STATUS="OK"
+EXIT_CODE=0
+PERFDATA=""
+
+# Define disks to monitor
+NVME_DISKS=("/dev/nvme0n1" "/dev/nvme1n1")
+
+# Check NVMe disks
+for DISK in "${NVME_DISKS[@]}"; do
+    [[ ! -b "$DISK" ]] && continue
+    SPARE=$(nvme smart-log "$DISK" 2>/dev/null | awk '/available_spare[[:space:]]*:/{print $3}' | tr -d '%')
+    THRESH=$(nvme smart-log "$DISK" 2>/dev/null | awk '/available_spare_threshold/{print $3}' | tr -d '%')
+
+    [[ -z "$SPARE" || -z "$THRESH" ]] && continue
+    PERFDATA+=" ${DISK}_spare=${SPARE}%;${THRESH};0;0;100"
+
+    if (( SPARE <= THRESH )); then
+        STATUS="CRITICAL"
+        EXIT_CODE=2
+    elif (( SPARE <= THRESH + 5 )) && (( EXIT_CODE < 2 )); then
+        STATUS="WARNING"
+        EXIT_CODE=1
+    fi
+done
+
+# Check SATA/SSD SMART
+for DISK in "${SATA_DISKS[@]}"; do
+    [[ ! -b "$DISK" ]] && continue
+    HEALTH=$(sudo smartctl -H "$DISK" 2>/dev/null | awk '/SMART overall-health self-assessment test result/{print $6}')
+    if [[ "$HEALTH" != "PASSED" ]]; then
+        STATUS="CRITICAL"
+        EXIT_CODE=2
+        PERFDATA+=" ${DISK}_health=0"
+    else
+        PERFDATA+=" ${DISK}_health=1"
+    fi
+done
+
+echo "$STATUS |$PERFDATA"
+exit $EXIT_CODE
