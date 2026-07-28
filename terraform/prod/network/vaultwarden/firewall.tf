@@ -38,6 +38,10 @@ resource "proxmox_virtual_environment_firewall_rules" "vaultwarden_profile" {
 
   rule {
     type    = "in"
+  }
+
+  rule {
+    type    = "in"
     action  = "ACCEPT"
     comment = "inbound: vaultwarden docker host port"
     proto   = "tcp"

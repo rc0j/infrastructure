@@ -1,8 +1,4 @@
 terraform {
-  backend "local" {
-    path = "/opt/terraform-state/adguard-dns.tfstate"
-  }
-
   required_providers {
     adguard = {
       source  = "gmichels/adguard"
@@ -14,13 +10,8 @@ terraform {
 provider "adguard" {
   host     = "192.168.100.97"
   username = "admin"
-  password = var.adguard_admin_password 
+  password = "rockwell1234"
   scheme   = "http"
-  timeout  = 5 
-  insecure = false 
-}
-
-variable "adguard_admin_password" {
-  type        = string
-  description = "Admin password to login to AdguardHome."
+  timeout  = 5
+  insecure = false
 }

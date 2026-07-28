@@ -1,7 +1,8 @@
 locals {
   dns_records = {
-    "centreon-prod" = "192.168.100.7"
-    "centreon-new"  = "centreon-prod"
+    "centreon-prod" = "vlcentreon"
+    "vlcentreon"  = "192.168.100.107"
+    "VLDNS0"      = "192.168.100.111"
     "orion"         = "192.168.100.20"
     "pi"            = "192.168.100.21"
     "node01"        = "192.168.100.98"

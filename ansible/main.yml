@@ -17,8 +17,6 @@
     - role: centreon_monitoring
       tags: centreon_monitoring
     # OPTIONAL:
-    - role: docker
-      tags: never, docker
     - role: backup_proxmox
       tags: never, backup_proxmox
     # - role: syncthing
