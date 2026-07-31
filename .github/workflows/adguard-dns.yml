@@ -30,7 +30,7 @@ jobs:
     steps:
       # Note: updated to v4, as v7 does not exist for the checkout action
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # Pull the last known state into the working dir so Terraform
       # knows what it already created. First run: no file yet, that's fine.
