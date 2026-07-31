@@ -80,3 +80,6 @@ For my homelab, I use KISS (Keep it simple, stupid!) principle as much as possib
 ## INFO
 
 I run a bunch of services, non of them are public. Access the homepage: http://127.0.0.1 ;) 
+
+### CI Status
+[![adguard_dns_update](https://github.com/rc0j/infrastructure/actions/workflows/adguard-dns.yml/badge.svg)](https://github.com/rc0j/infrastructure/actions/workflows/adguard-dns.yml)
