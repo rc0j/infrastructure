@@ -3,31 +3,55 @@ name: adguard_dns_update
 on:
   push:
     branches:
-      - main
+      - '**'
     paths:
       - 'terraform/prod/services/AdGuard/adguard-dns/**'
-  # Add pull_request trigger so the action runs when a PR is opened/updated
-  pull_request:
-    branches:
-      - main
-    paths:
-      - 'terraform/prod/services/AdGuard/adguard-dns/**'
+  workflow_dispatch: {}
+
+env:
+  TF_DIR: "terraform/prod/services/AdGuard/adguard-dns"
+  TF_VAR_adguard_admin_password: ${{ secrets.ADGUARD_ADMIN_PASSWORD }}
 
 jobs:
-  update_adguard_dns:
-    name: update_dns_records
-    runs-on: self-hosted
+  # Automatically opens a PR to main when a non-main branch is pushed
+  open_pr:
+    name: open_pull_request
+    if: github.event_name == 'push' && github.ref != 'refs/heads/main'
+    runs-on: node01-runner
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create Pull Request
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          BRANCH="${GITHUB_REF#refs/heads/}"
+          if gh pr list --head "$BRANCH" --base main --state open --json number | grep -q '"number"'; then
+            echo "PR already open for $BRANCH, skipping."
+          else
+            gh pr create \
+              --base main \
+              --head "$BRANCH" \
+              --title "AdGuard DNS update: $BRANCH" \
+              --body "Auto-generated PR for changes under ${{ env.TF_DIR }}."
+          fi
+
+  # Manual-only: lets a user run terraform plan on demand
+  terraform_plan:
+    name: terraform_plan
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: node01-runner
     container:
       image: hashicorp/terraform:latest
       volumes:
         - /var/local/terraform-state:/opt/terraform-state:rw
-
-    env:
-      TF_DIR: "terraform/prod/services/AdGuard/adguard-dns"
-      TF_VAR_adguard_admin_password: ${{ secrets.ADGUARD_ADMIN_PASSWORD }}
-
     steps:
-      # Note: updated to v4, as v7 does not exist for the checkout action
       - name: Checkout Code
         uses: actions/checkout@v4
 
@@ -37,15 +61,16 @@ jobs:
           terraform init -input=false
 
       - name: Terraform Plan
-        id: plan
         run: |
           cd ${{ env.TF_DIR }}
-          terraform plan -out=tfplan -input=false
+          terraform plan -input=false
 
-      # Only run the apply step if the workflow was triggered by a push to main
-      # (which happens exactly when you approve and merge the Pull Request)
-      - name: Terraform Apply
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: |
-          cd ${{ env.TF_DIR }}
-          terraform apply -input=false tfplan
+  # Unchanged: apply only happens on merge to main
+  terraform_apply:
+    name: terraform_apply
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: node01-runner
+    container:
+      image: hashicorp/terraform:latest
+      volumes:
+        - /var/local/terraform-state:/opt/terraform-state:rw
