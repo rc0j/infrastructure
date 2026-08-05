@@ -4,7 +4,8 @@ on:
     branches:
       - main
     paths:
-      - 'docker/vaultwarden-docker/**'
+      - 'docker/vaultwarden-docker/docker-compose.yml'
+      - 'docker/vaultwarden-docker/update_vaultwarden.sh'
       - '.github/workflows/vaultwarden.yml'
 
 jobs:
