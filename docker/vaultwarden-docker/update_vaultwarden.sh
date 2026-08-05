@@ -40,6 +40,9 @@ docker compose -f "$COMPOSE_FILE" down
 echo "Pulling latest image..."
 docker compose -f "$COMPOSE_FILE" pull
 
+echo "Fix permission to vw-data"
+chown vaultwarden:vaultwarden -R ./vw-data
+
 # Step 5: Start the container
 echo "Starting new container..."
 docker compose -f "$COMPOSE_FILE" up -d
