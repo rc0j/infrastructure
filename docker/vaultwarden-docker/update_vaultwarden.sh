@@ -35,15 +35,15 @@ fi
 
 # Step 3: Stop and remove the existing container
 echo "Stopping and removing old container..."
-docker-compose -f "$COMPOSE_FILE" down
+docker compose -f "$COMPOSE_FILE" down
 
 # Step 4: Pull the latest image
 echo "Pulling latest image..."
-docker-compose -f "$COMPOSE_FILE" pull
+docker compose -f "$COMPOSE_FILE" pull
 
 # Step 5: Start the container
-echo "🚀 Starting new container..."
-docker-compose -f "$COMPOSE_FILE" up -d
+echo "Starting new container..."
+docker compose -f "$COMPOSE_FILE" up -d
 
 # Step 6: Check the version from the homepage
 echo "Checking Vaultwarden version..."
@@ -52,7 +52,7 @@ VERSION=$(curl -s "$VERSION_URL" | grep -oP "$VERSION_REGEX" | head -n 1)
 
 if [[ -z "$VERSION" ]]; then
   echo "Failed to retrieve version from homepage. Check if the server is running."
-  docker-compose -f "$COMPOSE_FILE" logs vaultwarden
+  docker compose -f "$COMPOSE_FILE" logs vaultwarden
   exit 1
 fi
 
