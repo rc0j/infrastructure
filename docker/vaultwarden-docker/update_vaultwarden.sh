@@ -29,14 +29,6 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-# Fix permissions on data dir before starting (only if it exists)
-if [ -d "./vw-data" ]; then
-  echo "Fixing permissions on vw-data..."
-  chown vaultwarden:vaultwarden -R ./vw-data
-else
-  echo "./vw-data not found, skipping permission fix (expected on first run)."
-fi
-
 # Step 5: Start the container
 echo "Starting new container..."
 docker compose -f "$COMPOSE_FILE" up -d
