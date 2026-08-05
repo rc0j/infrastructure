@@ -13,4 +13,4 @@ jobs:
     steps:
       - name: Run deployment script
         run: |
-          ssh "$VAULTWARDEN_HOST@bitwarden" "bash ${{ vars.VAULTWARDEN_UPDATE_DIR }}"
+          ssh "${{ secrets.VAULTWARDEN_HOST }}@bitwarden" "bash ${{ vars.VAULTWARDEN_UPDATE_DIR }}"
