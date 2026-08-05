@@ -1,55 +1,40 @@
 #!/bin/bash
+set -e
 
 COMPOSE_FILE="./docker-compose.yml"
 CONTAINER_NAME="vaultwarden"
+SERVICE_NAME="vaultwarden"
 
-# Step 1: Pull latest changes from the repository
-echo "Pulling latest changes from the repository..."
-cd "$(dirname "$0")" || exit 1
-git pull origin main   # removed 2>/dev/null so real errors are visible if this fails
+cd "$(dirname "$0")"
 
-if [ $? -ne 0 ]; then
-  echo "Failed to pull changes from the repository. Aborting deployment."
-  exit 1
-fi
+echo "Pulling latest changes from repo..."
+git pull origin main
 
-# Step 3: Stop and remove the existing container
-echo "Stopping and removing old container..."
-docker compose -f "$COMPOSE_FILE" down
-if [ $? -ne 0 ]; then
-  echo "Failed to stop existing container. Aborting deployment."
-  exit 1
-fi
+OLD_IMAGE_ID=$(docker inspect -f '{{.Image}}' "$CONTAINER_NAME" 2>/dev/null || echo "")
 
-# Step 4: Pull the latest image
 echo "Pulling latest image..."
 docker compose -f "$COMPOSE_FILE" pull
-if [ $? -ne 0 ]; then
-  echo "Failed to pull latest image. Aborting deployment."
-  exit 1
+
+NEW_IMAGE_ID=$(docker compose -f "$COMPOSE_FILE" images -q "$SERVICE_NAME")
+
+if [ "$OLD_IMAGE_ID" == "$NEW_IMAGE_ID" ]; then
+  echo "Already running the latest image. Nothing to do."
+  exit 0
 fi
 
-# Step 5: Start the container
-echo "Starting new container..."
+echo "New image detected, updating container..."
 docker compose -f "$COMPOSE_FILE" up -d
-if [ $? -ne 0 ]; then
-  echo "Failed to start container. Aborting deployment."
+
+echo "Waiting for container to be running..."
+for i in $(seq 1 10); do
+  [ "$(docker inspect -f '{{.State.Running}}' "$CONTAINER_NAME" 2>/dev/null)" == "true" ] && break
+  sleep 2
+done
+
+if [ "$(docker inspect -f '{{.State.Running}}' "$CONTAINER_NAME" 2>/dev/null)" != "true" ]; then
+  echo "Container failed to reach running state."
+  docker logs "$CONTAINER_NAME" --tail 50
   exit 1
 fi
 
-# Step 6: Wait for the container to report running, instead of a blind sleep
-echo "Waiting for container to be up..."
-for i in $(seq 1 10); do
-  STATE=$(docker inspect -f '{{.State.Running}}' "$CONTAINER_NAME" 2>/dev/null)
-  if [ "$STATE" == "true" ]; then
-    echo "Container is running."
-    break
-  fi
-  echo "Not running yet, retrying ($i/10)..."
-  sleep 2
-  if [ "$i" -eq 10 ]; then
-    echo "Container failed to reach running state."
-    docker logs "$CONTAINER_NAME" --tail 50
-    exit 1
-  fi
-done
+echo "Vaultwarden updated successfully."
