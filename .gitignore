@@ -18,3 +18,4 @@ secrets.tfvars
 *.tfvars.*
 *.tfvars.json.backup
 ntfy-notification.env
+*.env
