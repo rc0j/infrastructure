@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Backup script path
-BACKUP_SCRIPT="/home/vaultwarden/vaultwarden-docker/backup.sh"
+BACKUP_SCRIPT="./backup.sh"
 
 # Docker Compose file path
-COMPOSE_FILE="docker/vaultwarden-docker/docker-compose.yml"
+COMPOSE_FILE="./docker-compose.yml"
 
 # Version check URL
 VERSION_URL="https://bitwarden.core-forge.fyi"
