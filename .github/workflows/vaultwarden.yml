@@ -1,0 +1,19 @@
+name: Vaultwarden Deployment/Update
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'docker/vaultwarden-docker/**'
+      - '.github/workflows/vaultwarden.yml'
+
+jobs:
+  update_vaultwarden:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Deploy Vaultwarden
+        run: |
+          ssh "$VAULTWARDEN_HOST@bitwarden" "bash ${VAULTWARDEN_UPDATE_DIR}"

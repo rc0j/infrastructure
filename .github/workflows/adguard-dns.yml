@@ -7,13 +7,6 @@ on:
     paths:
       - 'terraform/prod/services/AdGuard/adguard-dns/**'
       - '.github/workflows/adguard-dns.yml'
-  # Add pull_request trigger so the action runs when a PR is opened/updated
-  pull_request:
-    branches:
-      - main
-    paths:
-      - 'terraform/prod/services/AdGuard/adguard-dns/**'
-      - '.github/workflows/adguard-dns.yml'
 
 jobs:
   update_adguard_dns:
