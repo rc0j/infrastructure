@@ -10,7 +10,7 @@ COMPOSE_FILE="docker/vaultwarden-docker/docker-compose.yml"
 VERSION_URL="https://bitwarden.core-forge.fyi"
 
 # Step 1: Pull latest changes from the repository
-echo "🔄 Pulling latest changes from the repository..."
+echo "Pulling latest changes from the repository..."
 cd "$(dirname "$0")" || exit
 git pull origin main 2>/dev/null
 
@@ -20,17 +20,18 @@ if [ $? -ne 0 ]; then
 fi
 
 # Step 2: Run backup script
-echo "Running backup script..."
-if [ -f "$BACKUP_SCRIPT" ]; then
-  $BACKUP_SCRIPT
-  if [ $? -ne 0 ]; then
-    echo "❌ Backup failed. Aborting deployment."
-    exit 1
-  fi
-else
-  echo "Backup script not found at $BACKUP_SCRIPT. We cannot continue"
-  exit 1
-fi
+# temporariy disable backup
+# echo "Running backup script..."
+# if [ -f "$BACKUP_SCRIPT" ]; then
+#   $BACKUP_SCRIPT
+#   if [ $? -ne 0 ]; then
+#     echo "Backup failed. Aborting deployment."
+#     exit 1
+#   fi
+# else
+#   echo "Backup script not found at $BACKUP_SCRIPT. We cannot continue"
+#   exit 1
+# fi
 
 # Step 3: Stop and remove the existing container
 echo "Stopping and removing old container..."
