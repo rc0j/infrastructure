@@ -11,9 +11,6 @@ jobs:
   update_vaultwarden:
     runs-on: self-hosted
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-
-      - name: Deploy Vaultwarden
+      - name: Run deployment script
         run: |
           ssh "$VAULTWARDEN_HOST@bitwarden" "bash ${VAULTWARDEN_UPDATE_DIR}"
