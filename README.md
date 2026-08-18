@@ -83,3 +83,5 @@ I run a bunch of services, non of them are public. Access the homepage: http://1
 
 ### CI Status
 [![adguard_dns_update](https://github.com/rc0j/infrastructure/actions/workflows/adguard-dns.yml/badge.svg)](https://github.com/rc0j/infrastructure/actions/workflows/adguard-dns.yml)
+
+[![Vaultwarden Deployment/Update](https://github.com/rc0j/infrastructure/actions/workflows/vaultwarden.yml/badge.svg)](https://github.com/rc0j/infrastructure/actions/workflows/vaultwarden.yml)
