@@ -8,21 +8,11 @@ resource "proxmox_virtual_environment_cluster_firewall" "datacenter_fw" {
 }
 
 # ==========================================================
-# 2. VM SPECIFIC TOGGLE (Vaultwarden Only)
+# 2. SECURITY GROUP (Reusable Vaultwarden Profile)
 # ==========================================================
-resource "proxmox_virtual_environment_firewall_options" "vaultwarden_policy" {
-  node_name    = "orion"
-  vm_id        = 19299
-  enabled      = true   
-  input_policy = "DROP"  # Strictly blocks anything not explicitly allowed below
-}
-
-# ==========================================================
-# 3. VAULTWARDEN RULES BLOCK
-# ==========================================================
-resource "proxmox_virtual_environment_firewall_rules" "vaultwarden_profile" {
-  node_name = "orion"
-  vm_id     = 19299
+resource "proxmox_virtual_environment_cluster_firewall_security_group" "vaultwarden_sg" {
+  name    = "vaultwarden-sg"
+  comment = "Standard firewall profile for Vaultwarden instances"
 
   # --------------------------------------------------------
   # INBOUND RULES (Traffic coming TO Vaultwarden)
@@ -34,10 +24,6 @@ resource "proxmox_virtual_environment_firewall_rules" "vaultwarden_profile" {
     proto   = "tcp"
     dport   = "22"
     log     = "info"
-  }
-
-  rule {
-    type    = "in"
   }
 
   rule {
@@ -67,32 +53,52 @@ resource "proxmox_virtual_environment_firewall_rules" "vaultwarden_profile" {
   }
 
   rule {
-    type =   "in"
-    action = "ACCEPT"
+    type    = "in"
+    action  = "ACCEPT"
     comment = "inbound: allow http"
-    proto =  "tcp"
-    dport =  "80"
-    log =    "info"
+    proto   = "tcp"
+    dport   = "80"
+    log     = "info"
   }
 
   rule {
-    type =   "in"
-    action = "ACCEPT"
+    type    = "in"
+    action  = "ACCEPT"
     comment = "inbound: allow https"
-    proto =  "tcp"
-    dport =  "443"
-    log =    "info"
+    proto   = "tcp"
+    dport   = "443"
+    log     = "info"
   }
 
   # --------------------------------------------------------
   # OUTBOUND RULES (Traffic leaving FROM Vaultwarden)
   # --------------------------------------------------------
-
-  # Allow ALL outgoing traffic (Any protocol, any port, any destination)
   rule {
     type    = "out"
     action  = "ACCEPT"
     comment = "outbound: allow everything"
     log     = "info"
+  }
+}
+
+# ==========================================================
+# 3. APPLY TO VM (Options & Attach Security Group)
+# ==========================================================
+resource "proxmox_virtual_environment_firewall_options" "vaultwarden_policy" {
+  node_name    = "orion"
+  vm_id        = 19299
+  enabled      = true   
+  input_policy = "DROP"  # Strictly blocks anything not explicitly allowed below
+}
+
+resource "proxmox_virtual_environment_firewall_rules" "vaultwarden_vm_rules" {
+  node_name = "orion"
+  vm_id     = 19299
+
+  # Attach the Security Group to the VM
+  rule {
+    type           = "in"
+    security_group = proxmox_virtual_environment_cluster_firewall_security_group.vaultwarden_sg.name
+    comment        = "Attach Vaultwarden Security Group"
   }
 }

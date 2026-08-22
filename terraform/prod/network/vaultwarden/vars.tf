@@ -1,4 +1,4 @@
-variable proxmox_admin_password {
-    type = string
-    description = "proxmox login password"
+variable "proxmox_admin_password" {
+  type      = string
+  sensitive = true
 }

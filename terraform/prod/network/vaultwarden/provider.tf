@@ -1,4 +1,4 @@
-terraform { 
+terraform {
   required_providers {
     proxmox = {
       source  = "bpg/proxmox"
@@ -6,10 +6,10 @@ terraform {
     }
   }
 }
+
 provider "proxmox" {
   endpoint = "https://192.168.100.20:8006/"
   insecure = true
   username = "root@pam"
-  password = "var.proxmox_admin_password"
+  password = var.proxmox_admin_password
 }
-
