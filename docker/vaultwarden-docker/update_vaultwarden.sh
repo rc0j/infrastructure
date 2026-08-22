@@ -29,8 +29,6 @@ log() {
 }
 
 notify() {
-    # notify <title> <message> <priority> [tags]
-
     local title="$1"
     local message="$2"
     local priority="${3:-default}"
@@ -77,7 +75,7 @@ wait_for_healthy() {
         return 1
     fi
 
-    log "Container is running. Checking /alive endpoint..."
+    log "Container is running. Checking /alive..."
 
     for ((i=1; i<=HEALTH_RETRIES; i++)); do
         if curl -fsS -o /dev/null "$HEALTH_URL"; then
@@ -92,28 +90,27 @@ wait_for_healthy() {
 
 rollback() {
     local previous_commit="$1"
-    local previous_image_id="$2"
-    local previous_image_ref="$3"
+    local previous_image="$2"
 
-    log "Rolling back to previous commit $previous_commit..."
+    log "Rolling back to commit $previous_commit..."
 
     notify \
         "Vaultwarden update failed, rolling back" \
-        "Health check failed after update. Reverting to previous commit and Docker image." \
+        "Health check failed after update. Reverting to the previous version." \
         "high" \
         "rewind"
 
     git reset --hard "$previous_commit"
 
-    # Restore the exact Docker image that was running before the update.
-    if [[ -n "$previous_image_ref" && -n "$previous_image_id" ]]; then
-        log "Restoring previous Docker image: $previous_image_ref"
+    log "Restoring previous image: $previous_image"
 
-        docker tag "$previous_image_id" "$previous_image_ref"
+    # Make sure the old image is available locally.
+    if ! docker image inspect "$previous_image" >/dev/null 2>&1; then
+        log "Previous image is no longer available locally. Pulling $previous_image..."
+        docker pull "$previous_image"
     fi
 
-    log "Starting previous Vaultwarden version..."
-
+    # Start the exact previous Compose configuration.
     docker compose -f "$COMPOSE_FILE" up -d --pull never
 
     if wait_for_healthy; then
@@ -121,7 +118,7 @@ rollback() {
 
         notify \
             "Vaultwarden rollback successful" \
-            "Reverted to previous commit ($previous_commit) and restored the previous Docker image." \
+            "Reverted to commit $previous_commit and restored $previous_image." \
             "high" \
             "white_check_mark"
     else
@@ -131,7 +128,7 @@ rollback() {
 
         notify \
             "Vaultwarden ROLLBACK FAILED — manual intervention needed" \
-            "Neither the new image nor the rollback is healthy. SSH in now." \
+            "Neither the new version nor the rollback is healthy. SSH in now." \
             "urgent" \
             "rotating_light,skull"
 
@@ -148,20 +145,21 @@ fi
 
 CURRENT_COMMIT=$(git rev-parse HEAD)
 
-# Capture the exact image currently running BEFORE anything changes.
-RUNNING_IMAGE_ID=$(docker inspect \
-    -f '{{.Image}}' \
-    "$CONTAINER_NAME" \
-    2>/dev/null || echo "")
+# ---------------------------------------------------------------------------
+# Capture the currently running image BEFORE pulling Git changes.
+# ---------------------------------------------------------------------------
 
-RUNNING_IMAGE_REF=$(docker inspect \
+RUNNING_IMAGE=$(docker inspect \
     -f '{{.Config.Image}}' \
     "$CONTAINER_NAME" \
     2>/dev/null || echo "")
 
 log "Current commit: $CURRENT_COMMIT"
-log "Current image: ${RUNNING_IMAGE_REF:-unknown}"
-log "Current image ID: ${RUNNING_IMAGE_ID:-unknown}"
+log "Currently running image: ${RUNNING_IMAGE:-none}"
+
+# ---------------------------------------------------------------------------
+# Pull latest Git changes.
+# ---------------------------------------------------------------------------
 
 log "Pulling latest changes from repo..."
 
@@ -177,33 +175,45 @@ else
     log "  -> $NEW_COMMIT"
 fi
 
-log "Pulling latest Docker image..."
+# ---------------------------------------------------------------------------
+# Determine which image the updated Compose file wants to use.
+# ---------------------------------------------------------------------------
 
-docker compose -f "$COMPOSE_FILE" pull
+NEW_IMAGE=$(docker compose -f "$COMPOSE_FILE" config --images \
+    | grep -E '/server:' \
+    | head -n1)
 
-# Get the image referenced by the updated compose configuration.
-NEW_IMAGE_ID=$(docker compose -f "$COMPOSE_FILE" images -q "$SERVICE_NAME")
-
-if [[ -z "$NEW_IMAGE_ID" ]]; then
-    log "ERROR: Could not determine the new image ID."
+if [[ -z "$NEW_IMAGE" ]]; then
+    log "ERROR: Could not determine Vaultwarden image from Compose file."
     exit 1
 fi
 
-NEW_IMAGE_ID=$(docker image inspect \
-    -f '{{.Id}}' \
-    "$NEW_IMAGE_ID")
+log "Compose image: $NEW_IMAGE"
 
-log "New image ID: $NEW_IMAGE_ID"
+# ---------------------------------------------------------------------------
+# Compare the actual running image with the Compose image.
+# ---------------------------------------------------------------------------
 
-# Nothing changed at the Docker image level.
-if [[ -n "$RUNNING_IMAGE_ID" && "$RUNNING_IMAGE_ID" == "$NEW_IMAGE_ID" ]]; then
-    log "Already running the latest image. Nothing to do."
+if [[ -n "$RUNNING_IMAGE" && "$RUNNING_IMAGE" == "$NEW_IMAGE" ]]; then
+    log "Already running $NEW_IMAGE. Nothing to do."
     exit 0
 fi
 
-log "New image detected."
+log "New image detected:"
+log "  Current: $RUNNING_IMAGE"
+log "  Target:  $NEW_IMAGE"
 
-# --- Backup ----------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# Pull the new image.
+# ---------------------------------------------------------------------------
+
+log "Pulling latest image..."
+
+docker compose -f "$COMPOSE_FILE" pull
+
+# ---------------------------------------------------------------------------
+# Backup
+# ---------------------------------------------------------------------------
 
 log "Running backup before updating..."
 
@@ -236,11 +246,13 @@ else
     exit 1
 fi
 
-# --- Update ----------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# Update
+# ---------------------------------------------------------------------------
 
 log "Updating Vaultwarden container..."
 
-docker compose -f "$COMPOSE_FILE" up -d
+docker compose -f "$COMPOSE_FILE" up -d --pull never
 
 log "Waiting for container to become healthy..."
 
@@ -250,7 +262,7 @@ if wait_for_healthy; then
 
     notify \
         "Vaultwarden updated successfully" \
-        "Vaultwarden is running the new image and passing health checks." \
+        "Vaultwarden is now running $NEW_IMAGE and passing health checks." \
         "default" \
         "white_check_mark"
 
@@ -262,6 +274,5 @@ else
 
     rollback \
         "$CURRENT_COMMIT" \
-        "$RUNNING_IMAGE_ID" \
-        "$RUNNING_IMAGE_REF"
+        "$RUNNING_IMAGE"
 fi
