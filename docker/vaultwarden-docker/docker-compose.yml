@@ -3,7 +3,7 @@ services:
     image: vaultwarden/server:1.37.2
     container_name: vaultwarden
     restart: unless-stopped
-    user: "1001:1001"
+    user: "1003:1003"
     environment:
       - DOMAIN=${DOMAIN_URL}
       - ADMIN_TOKEN=${ADMIN_TOKEN}
