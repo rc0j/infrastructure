@@ -3,7 +3,7 @@
   "image": "mcr.microsoft.com/devcontainers/base:alpine",
   "runArgs": ["--name=infrastructure"],
   "containerEnv": {
-    "TERRAFORM_VERSION": "1.15.9"
+    "TERRAFORM_VERSION": "1.16.3"
   },
   "customizations": {
     "vscode": {
@@ -16,6 +16,6 @@
       ]
     }
   },
-  "postCreateCommand": "apk update && apk add git bash curl wget python3 ansible unzip && curl -LO https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip && unzip terraform_${TERRAFORM_VERSION}_linux_amd64.zip -d /usr/local/bin && rm terraform_${TERRAFORM_VERSION}_linux_amd64.zip && terraform -version",
+  "postCreateCommand": "apk update && apk add git bash curl wget python3 ansible unzip shellcheck && curl -LO https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip && unzip terraform_${TERRAFORM_VERSION}_linux_amd64.zip -d /usr/local/bin && rm terraform_${TERRAFORM_VERSION}_linux_amd64.zip && terraform -version",
   "remoteUser": "root"
 }
