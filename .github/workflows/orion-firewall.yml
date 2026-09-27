@@ -20,7 +20,7 @@ jobs:
   
     env:
       TF_DIR: "terraform/prod/network"
-      STATE_FILE: "/opt/terraform-state-firewall/firewall.tfstate"
+      STATE_FILE: "/opt/terraform-state/orion-firewall.tfstate"
   
     steps:
         - name: Checkout Code
@@ -28,7 +28,6 @@ jobs:
   
         - name: Restore Previous State
           run: |
-            mkdir -p /opt/terraform-state-firewall
             if [ -f "${{ env.STATE_FILE }}" ]; then
               cp "${{ env.STATE_FILE }}" "${{ env.TF_DIR }}/terraform.tfstate"
               echo "Restored existing state file."
