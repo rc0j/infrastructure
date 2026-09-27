@@ -1,6 +1,7 @@
 - name: SYSTEM UPDATE - DEBIAN
   hosts: all
-  become: true
+  become: True
+  serial: 1
   vars:
     free_space_gb: "1"
 
@@ -18,6 +19,17 @@
       ansible.builtin.apt:
         name: "*"
         state: latest
+      when: ansible_facts['os_family'] == "Debian"
+    
+    - name: Update all packages to their latest version (RedHat/CentOS)
+      ansible.builtin.yum:
+        name: "*"
+        state: latest
+      when: ansible_facts['os_family'] == "Almalinux"
+    
+    - name: Update Alpine packages to their latest version
+      ansible.builtin.command: "apk update && apk upgrade"
+      when: ansible_facts['os_family'] == "Alpine"
 
     - name: Reboot the server after patching
       ansible.builtin.reboot:
