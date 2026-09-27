@@ -175,7 +175,7 @@ resource "proxmox_virtual_environment_cluster_firewall_security_group" "vlnode01
     action = "ACCEPT"
     proto  = "tcp"
     dport  = "8090"
-    comment = "Allow Wallabag"
+    comment = "Allow Wallabag (temporary)"
     log     = "info"
   }
 
