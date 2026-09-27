@@ -10,9 +10,10 @@ on:
       - '.github/workflows/orion-firewall.yml'
 
 jobs:
-  prepare_env:
-    name: prepare_env
+  terraform:
+    name: Terraform Firewall
     runs-on: self-hosted
+
     container:
       image: hashicorp/terraform:latest
       volumes:
@@ -30,73 +31,37 @@ jobs:
       - name: Restore Previous State
         run: |
           mkdir -p /opt/terraform-state
-          if [ -f "${{ env.STATE_FILE }}" ]; then
-            cp "${{ env.STATE_FILE }}" "${{ env.TF_DIR }}/terraform.tfstate"
+
+          if [ -f "${STATE_FILE}" ]; then
+            cp "${STATE_FILE}" "${TF_DIR}/terraform.tfstate"
             echo "Restored existing state file."
           else
             echo "No previous state file found, starting fresh."
           fi
-    
-  terraform_init:
-    name: terraform_init
-    needs: prepare_env
-    runs-on: self-hosted
-    container:
-      image: hashicorp/terraform:latest
-      volumes:
-        - /var/local/terraform-state:/opt/terraform-state:rw
-    env:
-      TF_DIR: "terraform/prod/network"
-      STATE_FILE: "/opt/terraform-state/firewall.tfstate"
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v7
+
       - name: Terraform Init
+        working-directory: ${{ env.TF_DIR }}
         run: |
-          cd ${{ env.TF_DIR }}
           terraform init -input=false
-    
-  terraform_plan:
-    name: terraform_plan
-    needs: terraform_init
-    runs-on: self-hosted
-    container:
-      image: hashicorp/terraform:latest
-      volumes:
-        - /var/local/terraform-state:/opt/terraform-state:rw
-    env:
-      TF_DIR: "terraform/prod/network"
-      STATE_FILE: "/opt/terraform-state/firewall.tfstate"
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v7
+
       - name: Terraform Plan
-        id: plan
+        working-directory: ${{ env.TF_DIR }}
         run: |
-          cd ${{ env.TF_DIR }}
-          terraform plan -out=tfplan -input=false --var "proxmox_admin_password=${{ env.PROXMOX_ADMIN_PASSWORD }}"
-    
-  terraform_apply:
-    name: terraform_apply
-    needs: [prepare_env, terraform_init, terraform_plan]
-    runs-on: self-hosted
-    container:
-      image: hashicorp/terraform:latest
-      volumes:
-        - /var/local/terraform-state:/opt/terraform-state:rw
-    env:
-      TF_DIR: "terraform/prod/network"
-      STATE_FILE: "/opt/terraform-state/firewall.tfstate"
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v7
+          terraform plan \
+            -input=false \
+            -out=tfplan \
+            -var="proxmox_admin_password=${PROXMOX_ADMIN_PASSWORD}"
+
       - name: Terraform Apply
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        working-directory: ${{ env.TF_DIR }}
         run: |
-          cd ${{ env.TF_DIR }}
-          terraform apply -input=false tfplan
+          terraform apply \
+            -input=false \
+            tfplan
+
       - name: Save State File
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        working-directory: ${{ env.TF_DIR }}
         run: |
-          cd ${{ env.TF_DIR }}
-          cp terraform.tfstate "${{ env.STATE_FILE }}"
+          cp terraform.tfstate "${STATE_FILE}"
