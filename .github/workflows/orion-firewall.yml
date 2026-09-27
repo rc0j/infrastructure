@@ -10,8 +10,8 @@ on:
       - '.github/workflows/orion-firewall.yml'
 
 jobs:
-  prepare_env:
-    name: prepare_env
+  terraform_apply:
+    name: terraform_apply
     runs-on: self-hosted
 
     container:
@@ -22,6 +22,7 @@ jobs:
     env:
       TF_DIR: "terraform/prod/network"
       STATE_FILE: "/opt/terraform-state/firewall.tfstate"
+      TF_VAR_proxmox_admin_password: ${{ secrets.PROXMOX_ADMIN_PASSWORD }}
 
     steps:
       - name: Checkout Code
@@ -37,86 +38,21 @@ jobs:
             echo "No previous state file found, starting fresh."
           fi
 
-  terraform_plan:
-    name: terraform_plan
-    needs: prepare_env
-    runs-on: self-hosted
-
-    container:
-      image: hashicorp/terraform:latest
-      volumes:
-        - /var/local/terraform-state:/opt/terraform-state:rw
-
-    env:
-      TF_DIR: "terraform/prod/network"
-      STATE_FILE: "/opt/terraform-state/firewall.tfstate"
-      PLAN_FILE: "/opt/terraform-state/firewall.tfplan"
-      TF_VAR_proxmox_admin_password: ${{ secrets.PROXMOX_ADMIN_PASSWORD }}
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v7
-
-      - name: Restore Previous State
-        run: |
-          if [ -f "${{ env.STATE_FILE }}" ]; then
-            cp "${{ env.STATE_FILE }}" "${{ env.TF_DIR }}/terraform.tfstate"
-            echo "Restored existing state file."
-          else
-            echo "No previous state file found."
-          fi
-
       - name: Terraform Init
         run: |
           cd ${{ env.TF_DIR }}
           terraform init -input=false
-      
-      - name: Remove old Terraform plan
-        run: rm "$PLAN_FILE"
 
       - name: Terraform Plan
-        id: plan
         run: |
           cd ${{ env.TF_DIR }}
-          terraform plan -out="${{ env.PLAN_FILE }}" -input=false
-
-  terraform_apply:
-    name: terraform_apply
-    needs: terraform_plan
-    runs-on: self-hosted
-
-    container:
-      image: hashicorp/terraform:latest
-      volumes:
-        - /var/local/terraform-state:/opt/terraform-state:rw
-
-    env:
-      TF_DIR: "terraform/prod/network"
-      STATE_FILE: "/opt/terraform-state/firewall.tfstate"
-      PLAN_FILE: "/opt/terraform-state/firewall.tfplan"
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v7
-
-      - name: Restore Previous State
-        run: |
-          if [ -f "${{ env.STATE_FILE }}" ]; then
-            cp "${{ env.STATE_FILE }}" "${{ env.TF_DIR }}/terraform.tfstate"
-            echo "Restored existing state file."
-          else
-            echo "No previous state file found."
-          fi
-
-      - name: Terraform Init
-        run: |
-          cd ${{ env.TF_DIR }}
-          terraform init -input=false
+          terraform plan -input=false -out=firewall.tfplan
 
       - name: Terraform Apply
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
-          terraform apply -input=false "${{ env.PLAN_FILE }}"
+          cd ${{ env.TF_DIR }}
+          terraform apply -input=false firewall.tfplan
 
       - name: Save State File
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
