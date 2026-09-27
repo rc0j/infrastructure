@@ -21,6 +21,7 @@ jobs:
     env:
       TF_DIR: "terraform/prod/network"
       STATE_FILE: "/opt/terraform-state/firewall.tfstate"
+      PROXMOX_ADMIN_PASSWORD: ${{ secrets.PROXMOX_ADMIN_PASSWORD }}
 
     steps:
       - name: Checkout Code
@@ -38,6 +39,7 @@ jobs:
     
   terraform_init:
     name: terraform_init
+    needs: prepare_env
     runs-on: self-hosted
     container:
       image: hashicorp/terraform:latest
@@ -56,6 +58,7 @@ jobs:
     
   terraform_plan:
     name: terraform_plan
+    needs: terraform_init
     runs-on: self-hosted
     container:
       image: hashicorp/terraform:latest
