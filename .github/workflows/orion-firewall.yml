@@ -74,7 +74,7 @@ jobs:
         id: plan
         run: |
           cd ${{ env.TF_DIR }}
-          terraform plan -out=tfplan -input=false
+          terraform plan -out=tfplan -input=false --var "proxmox_admin_password=${{ env.PROXMOX_ADMIN_PASSWORD }}"
     
   terraform_apply:
     name: terraform_apply
