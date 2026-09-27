@@ -40,12 +40,17 @@ jobs:
           run: |
             cd ${{ env.TF_DIR }}
             terraform init -input=false
+
+        - name: Import secrets
+          run: |
+            echo "proxmox_admin_password = \"${{ secrets.PROXMOX_ADMIN_PASSWORD }}\"" > ${{ env.TF_DIR }}/terraform.tfvars
+            echo "Saved Proxmox admin password to terraform.tfvars."
   
         - name: Terraform Plan
           id: plan
           run: |
             cd ${{ env.TF_DIR }}
-            terraform plan -out=tfplan-network -input=false
+            terraform plan -out=tfplan-network -input=false --var-file=terraform.tfvars
   
         # Only run the apply step if the workflow was triggered by a push to main
         # (which happens exactly when you approve and merge the Pull Request)
