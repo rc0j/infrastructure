@@ -20,7 +20,7 @@ jobs:
   
     env:
       TF_DIR: "terraform/prod/network"
-      STATE_FILE: "/opt/terraform-state/orion-firewall.tfstate"
+      STATE_FILE: "/opt/terraform-state/terraform.tfstate"
   
     steps:
         - name: Checkout Code
