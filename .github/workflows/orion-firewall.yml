@@ -79,7 +79,7 @@ jobs:
 
   terraform_apply:
     name: terraform_apply
-    needs: [prepare_env, terraform_plan]
+    needs: terraform_plan
     runs-on: self-hosted
 
     container:
