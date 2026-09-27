@@ -53,6 +53,14 @@ resource "proxmox_virtual_environment_cluster_firewall_security_group" "vaultwar
     log     = "info"
   }
 
+  rule {
+    type   = "in"
+    action = "ACCEPT"
+    proto  = "icmp"
+    comment = "Allow ICMP"
+    log     = "info"
+  }
+
   # --------------------------------------------------------
   # OUTBOUND
   # --------------------------------------------------------
