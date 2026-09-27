@@ -6,61 +6,93 @@ on:
       - main
       - managed_firewall
     paths:
-      - 'terraform/prod/network/firewall.tf'
+      - 'terraform/prod/network/**'
       - '.github/workflows/orion-firewall.yml'
 
 jobs:
-  update_firewall:
-    name: update_firewall_rules
+  prepare_env:
+    name: prepare_env
     runs-on: self-hosted
     container:
       image: hashicorp/terraform:latest
       volumes:
-        - /var/local/terraform-state-firewall:/opt/terraform-state:rw
-  
+        - /var/local/terraform-state:/opt/terraform-state:rw
+
     env:
       TF_DIR: "terraform/prod/network"
-      STATE_FILE: "/opt/terraform-state/terraform.tfstate"
-  
-    steps:
-        - name: Checkout Code
-          uses: actions/checkout@v7
-  
-        - name: Restore Previous State
-          run: |
-            if [ -f "${{ env.STATE_FILE }}" ]; then
-              cp "${{ env.STATE_FILE }}" "${{ env.TF_DIR }}/terraform.tfstate"
-              echo "Restored existing state file."
-            else
-              echo "No previous state file found, starting fresh."
-            fi
-  
-        - name: Terraform Init
-          run: |
-            cd ${{ env.TF_DIR }}
-            terraform init -input=false
+      STATE_FILE: "/opt/terraform-state/firewall.tfstate"
 
-        - name: Import secrets
-          run: |
-            echo "proxmox_admin_password = \"${{ secrets.PROXMOX_ADMIN_PASSWORD }}\"" > ${{ env.TF_DIR }}/terraform.tfvars
-            echo "Saved Proxmox admin password to terraform.tfvars."
-  
-        - name: Terraform Plan
-          id: plan
-          run: |
-            cd ${{ env.TF_DIR }}
-            terraform plan -out=tfplan-network -input=false --var-file=terraform.tfvars
-  
-        # Only run the apply step if the workflow was triggered by a push to main
-        # (which happens exactly when you approve and merge the Pull Request)
-        - name: Terraform Apply
-          if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-          run: |
-            cd ${{ env.TF_DIR }}
-            terraform apply -input=false tfplan-network
-        
-        - name: Save Updated State
-          run: |
-            cp "${{ env.TF_DIR }}/terraform.tfstate" "${{ env.STATE_FILE }}"
-            echo "Saved updated state file."
-      
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+
+      - name: Restore Previous State
+        run: |
+          mkdir -p /opt/terraform-state
+          if [ -f "${{ env.STATE_FILE }}" ]; then
+            cp "${{ env.STATE_FILE }}" "${{ env.TF_DIR }}/terraform.tfstate"
+            echo "Restored existing state file."
+          else
+            echo "No previous state file found, starting fresh."
+          fi
+    
+  terraform_init:
+    name: terraform_init
+    runs-on: self-hosted
+    container:
+      image: hashicorp/terraform:latest
+      volumes:
+        - /var/local/terraform-state:/opt/terraform-state:rw
+    env:
+      TF_DIR: "terraform/prod/network"
+      STATE_FILE: "/opt/terraform-state/firewall.tfstate"
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+      - name: Terraform Init
+        run: |
+          cd ${{ env.TF_DIR }}
+          terraform init -input=false
+    
+  terraform_plan:
+    name: terraform_plan
+    runs-on: self-hosted
+    container:
+      image: hashicorp/terraform:latest
+      volumes:
+        - /var/local/terraform-state:/opt/terraform-state:rw
+    env:
+      TF_DIR: "terraform/prod/network"
+      STATE_FILE: "/opt/terraform-state/firewall.tfstate"
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+      - name: Terraform Plan
+        id: plan
+        run: |
+          cd ${{ env.TF_DIR }}
+          terraform plan -out=tfplan -input=false
+    
+  terraform_apply:
+    name: terraform_apply
+    runs-on: self-hosted
+    container:
+      image: hashicorp/terraform:latest
+      volumes:
+        - /var/local/terraform-state:/opt/terraform-state:rw
+    env:
+      TF_DIR: "terraform/prod/network"
+      STATE_FILE: "/opt/terraform-state/firewall.tfstate"
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+      - name: Terraform Apply
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          cd ${{ env.TF_DIR }}
+          terraform apply -input=false tfplan
+      - name: Save State File
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          cd ${{ env.TF_DIR }}
+          cp terraform.tfstate "${{ env.STATE_FILE }}"
