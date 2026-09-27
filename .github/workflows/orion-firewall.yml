@@ -70,6 +70,9 @@ jobs:
         run: |
           cd ${{ env.TF_DIR }}
           terraform init -input=false
+      
+      - name: Remove old Terraform plan
+        run: rm "$PLAN_FILE"
 
       - name: Terraform Plan
         id: plan
