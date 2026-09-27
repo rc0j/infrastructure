@@ -287,6 +287,15 @@ resource "proxmox_virtual_environment_cluster_firewall_security_group" "immich_s
     comment = "Allow ICMP"
     log     = "info"
   }
+
+  rule {
+    type    = "in"
+    action  = "ACCEPT"
+    proto   = "tcp"
+    dport   = "161"
+    comment = "Allow SNMP"
+    log     = "info"
+  }
   
   # --------------------------------------------------------
   # OUTBOUND
