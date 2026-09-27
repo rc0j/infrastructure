@@ -4,16 +4,14 @@ on:
   push:
     branches:
       - main
-      - managed_firewall
     paths:
       - 'terraform/prod/network/**'
       - '.github/workflows/orion-firewall.yml'
 
 jobs:
-  terraform_apply:
-    name: terraform_apply
+  update_firewall_rules:
+    name: update_firewall_rules
     runs-on: self-hosted
-
     container:
       image: hashicorp/terraform:latest
       volumes:
@@ -25,9 +23,12 @@ jobs:
       TF_VAR_proxmox_admin_password: ${{ secrets.PROXMOX_ADMIN_PASSWORD }}
 
     steps:
+      # Note: updated to v4, as v7 does not exist for the checkout action
       - name: Checkout Code
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
 
+      # Pull the last known state into the working dir so Terraform
+      # knows what it already created. First run: no file yet, that's fine.
       - name: Restore Previous State
         run: |
           mkdir -p /opt/terraform-state
@@ -44,17 +45,21 @@ jobs:
           terraform init -input=false
 
       - name: Terraform Plan
+        id: plan
         run: |
           cd ${{ env.TF_DIR }}
-          terraform plan -input=false -out=firewall.tfplan
+          terraform plan -out=tfplan -input=false
 
+      # Only run the apply step if the workflow was triggered by a push to main
       - name: Terraform Apply
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           cd ${{ env.TF_DIR }}
-          terraform apply -input=false firewall.tfplan
+          terraform apply -input=false tfplan
 
-      - name: Save State File
+      # Persist the updated state back to the mounted volume so it
+      # survives to the next run.
+      - name: Save Updated State
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           cp "${{ env.TF_DIR }}/terraform.tfstate" "${{ env.STATE_FILE }}"
