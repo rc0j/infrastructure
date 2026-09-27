@@ -1,0 +1,62 @@
+name: terraform_firewall_update
+
+on:
+  push:
+    branches:
+      - main
+      - managed_firewall
+    paths:
+      - 'terraform/prod/network/firewall.tf'
+      - '.github/workflows/orion-firewall.yml'
+
+jobs:
+  update_firewall:
+    name: update_firewall_rules
+    runs-on: self-hosted
+    container:
+      image: hashicorp/terraform:latest
+      volumes:
+        - /var/local/terraform-state-firewall:/opt/terraform-state:rw
+  
+    env:
+      TF_DIR: "terraform/prod/network"
+      STATE_FILE: "/opt/terraform-state-firewall/firewall.tfstate"
+  
+    steps:
+        - name: Checkout Code
+          uses: actions/checkout@v7
+  
+        - name: Restore Previous State
+          run: |
+            mkdir -p /opt/terraform-state-firewall
+            if [ -f "${{ env.STATE_FILE }}" ]; then
+              cp "${{ env.STATE_FILE }}" "${{ env.TF_DIR }}/terraform.tfstate"
+              echo "Restored existing state file."
+            else
+              echo "No previous state file found, starting fresh."
+            fi
+  
+        - name: Terraform Init
+          run: |
+            cd ${{ env.TF_DIR }}
+            terraform init -input=false
+  
+        - name: Terraform Plan
+          id: plan
+          run: |
+            cd ${{ env.TF_DIR }}
+            terraform plan -out=tfplan-network -input=false
+  
+        # Only run the apply step if the workflow was triggered by a push to main
+        # (which happens exactly when you approve and merge the Pull Request)
+        - name: Terraform Apply
+          if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+          run: |
+            cd ${{ env.TF_DIR }}
+            terraform apply -input=false tfplan-network
+        
+        - name: Save Updated State
+          run: |
+            cp "${{ env.TF_DIR }}/terraform.tfstate" "${{ env.STATE_FILE }}"
+            echo "Saved updated state file."
+      
