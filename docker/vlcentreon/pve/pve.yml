@@ -1,0 +1,10 @@
+pve1:
+  user: prometheus@pve
+  token_name: monitoring
+  token_value: 3878f824-f11a-4399-9943-3c7fafca511e
+  verify_ssl: false
+pve2:
+  user: prometheus@pve
+  token_name: monitoring
+  token_value: d98d2b12-fd42-4b08-a78c-117d1cd5c116
+  verify_ssl: false

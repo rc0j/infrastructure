@@ -1,0 +1,52 @@
+global:
+  scrape_interval: 30s
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: centreon-vm
+    static_configs:
+      - targets: ['host.docker.internal:9100']
+        labels: { node: centreon }
+
+  - job_name: proxmox-nodes
+    static_configs:
+      - targets: ['192.168.100.20:9100']
+        labels: { node: pve1 }
+      - targets: ['192.168.100.122:9100']
+        labels: { node: pve2 }
+
+  - job_name: vlnode01
+    static_configs:
+      - targets: ['192.168.100.98:9100']
+        labels: { node: vlnode01 }
+
+  - job_name: cadvisor
+    static_configs:
+      - targets: ['192.168.100.98:8082']
+
+  - job_name: pve-exporter-1
+    metrics_path: /pve
+    params: { module: [pve1], cluster: ['0'], node: ['1'] }
+    static_configs:
+      - targets: ['192.168.100.20:8006']
+        labels: { node: pve1 }
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - target_label: __address__
+        replacement: pve-exporter:9221
+
+  - job_name: pve-exporter-2
+    metrics_path: /pve
+    params: { module: [pve2], cluster: ['0'], node: ['1'] }
+    static_configs:
+      - targets: ['192.168.100.122:8006']
+        labels: { node: pve2 }
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - target_label: __address__
+        replacement: pve-exporter:9221
