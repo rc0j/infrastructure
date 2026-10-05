@@ -180,6 +180,15 @@ resource "proxmox_virtual_environment_cluster_firewall_security_group" "vlnode01
   }
 
   rule {
+    type   = "in"
+    action  = "ACCEPT"
+    proto   = "tcp"
+    dport   = "8082"
+    comment = "Allow Prometheus Alertmanager"
+    log     = "info"
+  }
+
+  rule {
     type  = "in"
     action = "ACCEPT"
     proto  = "tcp"
