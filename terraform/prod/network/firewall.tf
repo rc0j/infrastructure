@@ -171,11 +171,11 @@ resource "proxmox_virtual_environment_cluster_firewall_security_group" "vlnode01
   }
 
   rule {
-    type   = "in"
-    action = "ACCEPT"
-    proto  = "tcp"
-    dport  = "8090"
-    comment = "Allow Wallabag (temporary)"
+    type    = "in"
+    action  = "ACCEPT"
+    proto   = "tcp"
+    dport   = "9100"
+    comment = "Allow Prometheus Node Exporter"
     log     = "info"
   }
 
