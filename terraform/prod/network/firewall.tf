@@ -216,6 +216,15 @@ resource "proxmox_virtual_environment_cluster_firewall_security_group" "vlnode01
   }
 
   rule {
+    type = "in"
+    action = "ACCEPT"
+    proto = "tcp"
+    dport = "22000"
+    comment = "Allow Syncthing"
+    log     = "info"
+  }
+
+  rule {
     type  = "in"
     action = "ACCEPT"
     proto  = "tcp"
