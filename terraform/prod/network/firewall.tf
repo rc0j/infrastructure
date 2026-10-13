@@ -61,6 +61,24 @@ resource "proxmox_virtual_environment_cluster_firewall_security_group" "vaultwar
     log     = "info"
   }
 
+  rule { 
+    type   = "in"
+    action = "ACCEPT"
+    proto  = "tcp"
+    dport  = "161"
+    comment = "Allow SNMP"
+    log     = "info"
+  }
+
+  rule { 
+    type   = "in"
+    action = "ACCEPT"
+    proto  = "udp"
+    dport  = "161"
+    comment = "Allow SNMP"
+    log     = "info"
+  }
+
   # --------------------------------------------------------
   # OUTBOUND
   # --------------------------------------------------------
