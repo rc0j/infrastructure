@@ -234,15 +234,6 @@ resource "proxmox_virtual_environment_cluster_firewall_security_group" "vlnode01
   }
 
   rule {
-    type = "in"
-    action = "ACCEPT"
-    proto = "tcp"
-    dport = "22000"
-    comment = "Allow Syncthing"
-    log     = "info"
-  }
-
-  rule {
     type  = "in"
     action = "ACCEPT"
     proto  = "tcp"
@@ -250,6 +241,7 @@ resource "proxmox_virtual_environment_cluster_firewall_security_group" "vlnode01
     comment = "Allow Syncthing web UI"
     log     = "info"
   }
+
   rule {
     type  = "in"
     action = "ACCEPT"
@@ -262,8 +254,8 @@ resource "proxmox_virtual_environment_cluster_firewall_security_group" "vlnode01
     type  = "in"
     action = "ACCEPT"
     proto  = "udp"
-    dport  = "21026"
-    comment = "Allow Syncthing discovery"
+    dport  = "22067"
+    comment = "Allow Syncthing Relay Protocol Data Fallback"
     log     = "info"
   }
 
