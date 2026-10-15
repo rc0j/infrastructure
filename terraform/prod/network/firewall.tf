@@ -250,6 +250,22 @@ resource "proxmox_virtual_environment_cluster_firewall_security_group" "vlnode01
     comment = "Allow Syncthing web UI"
     log     = "info"
   }
+  rule {
+    type  = "in"
+    action = "ACCEPT"
+    proto  = "udp"
+    dport  = "21027"
+    comment = "Allow Syncthing discovery"
+    log     = "info"
+  }
+  rule {
+    type  = "in"
+    action = "ACCEPT"
+    proto  = "udp"
+    dport  = "21026"
+    comment = "Allow Syncthing discovery"
+    log     = "info"
+  }
 
   # --------------------------------------------------------
   # OUTBOUND
