@@ -258,6 +258,97 @@ resource "proxmox_virtual_environment_cluster_firewall_security_group" "vlnode01
     comment = "Allow Syncthing Relay Protocol Data Fallback"
     log     = "info"
   }
+  rule {
+    type  = "in"
+    action = "ACCEPT"
+    proto  = "tcp"
+    dport  = "8123"
+    comment = "Allow Home Assistant UI"
+    log     = "info"
+  }
+  rule {
+    type  = "in"
+    action = "ACCEPT"
+    proto  = "tcp"
+    dport  = "5353"
+    comment = "Allow mDNS"
+    log     = "info"
+  }
+  rule {
+    type  = "in"
+    action = "ACCEPT"
+    proto  = "udp"
+    dport  = "5353"
+    comment = "Allow mDNS"
+    log     = "info"
+  }
+  rule {
+    type  = "in"
+    action = "ACCEPT"
+    proto  = "udp"
+    dport  = "1900"
+    comment = "Allow SSDP"
+    log     = "info"
+  }
+  rule {
+    type  = "in"
+    action = "ACCEPT"
+    proto  = "tcp"
+    dport  = "51827"
+    comment = "Allow HomeKit"
+    log     = "info"
+  }
+  rule {
+    type  = "in"
+    action = "ACCEPT"
+    proto  = "udp"
+    dport  = "51827"
+    comment = "Allow HomeKit"
+    log     = "info"
+  }
+  rule {
+    type  = "in"
+    action = "ACCEPT"
+    proto  = "tcp"
+    dport  = "21027"
+    comment = "Allow Syncthing discovery"
+    log     = "info"
+  }
+  rule {
+    type  = "in"
+    action = "ACCEPT"
+    proto  = "udp"
+    dport  = "21027"
+    comment = "Allow Syncthing discovery"
+    log     = "info"
+  }
+  rule {
+    type  = "in"
+    action = "ACCEPT"
+    proto  = "tcp"
+    dport  = "22067"
+    comment = "Allow Syncthing Relay Protocol Data Fallback"
+    log     = "info"
+  }
+  rule {
+    type  = "in"
+    action = "ACCEPT"
+    proto  = "udp"
+    dport  = "22067"
+    comment = "Allow Syncthing Relay Protocol Data Fallback"
+    log     = "info"
+  }
+  rule {
+    type  = "in"
+    action = "ACCEPT"
+    proto  = "tcp"
+    dport  = "22068"
+    comment = "Allow Syncthing Relay Protocol Control Fallback"
+    log     = "info"
+  }
+
+
+
 
   # --------------------------------------------------------
   # OUTBOUND
