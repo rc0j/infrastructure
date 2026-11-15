@@ -503,6 +503,10 @@ resource "proxmox_virtual_environment_cluster_firewall_security_group" "adguard_
   }
 }
 
+# ==========================================================
+# 7. APPLY ADGUARD FIREWALL
+# ==========================================================
+
 resource "proxmox_virtual_environment_firewall_options" "adguard_policy" {
   node_name    = "orion"
   vm_id        = 192105
@@ -518,5 +522,86 @@ resource "proxmox_virtual_environment_firewall_rules" "adguard_vm_rules" {
     type           = "in"
     security_group = proxmox_virtual_environment_cluster_firewall_security_group.adguard_sg.name
     comment        = "Attach AdGuard Security Group"
+  }
+}
+
+
+# ==========================================================
+# 8. SECURITY GROUP - VLDRIVE
+# ==========================================================
+
+resource "proxmox_virtual_environment_cluster_firewall_security_group" "opencloud_sg" {
+  name    = "opencloud_sg"
+  comment = "Default-deny inbound profile for OpenCloud_SG"
+
+  # --------------------------------------------------------
+  # INBOUND
+  # --------------------------------------------------------
+
+  rule {
+    type    = "in"
+    action  = "ACCEPT"
+    proto   = "tcp"
+    dport   = "22"
+    comment = "Allow SSH"
+    log     = "info"
+  }
+
+  rule {
+    type    = "in"
+    action  = "ACCEPT"
+    proto   = "tcp"
+    dport   = "9200"
+    comment = "Allow opencloudeu web client"
+    log     = "info"
+  }
+
+  rule { 
+    type    = "in"
+    action  = "ACCEPT"
+    proto   = "udp"
+    dport   = "161"
+    comment = "Allow SNMP"
+    log     = "info"
+  }
+
+  rule {
+    type    = "in"
+    action  = "ACCEPT"
+    proto   = "icmp"
+    comment = "Allow ICMP"
+    log     = "info"
+  }
+
+  # --------------------------------------------------------
+  # OUTBOUND
+  # --------------------------------------------------------
+  rule {
+    type    = "out"
+    action  = "ACCEPT"
+    comment = "Allow outbound traffic"
+    log     = "info"
+  }
+}
+
+# ==========================================================
+# 7. APPLY OPENCLOUD FIREWALL
+# ==========================================================
+
+resource "proxmox_virtual_environment_firewall_options" "opencloud_policy" {
+  node_name    = "orion"
+  vm_id        = 192101
+  enabled      = true
+  input_policy = "DROP"
+}
+
+resource "proxmox_virtual_environment_firewall_rules" "opencloud_vm_rules" {
+  node_name = "orion"
+  vm_id     = 192101
+
+  rule {
+    type           = "in"
+    security_group = proxmox_virtual_environment_cluster_firewall_security_group.opencloud_sg.name
+    comment        = "Attach OPENCLOUD Security group"
   }
 }
