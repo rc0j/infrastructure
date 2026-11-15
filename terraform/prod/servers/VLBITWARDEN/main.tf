@@ -42,4 +42,9 @@ resource "proxmox_vm_qemu" "cloudinit" {
         bridge = var.bridge
 
     }
+
+    vga {
+      type = "serial0"
+      memory = 0
+    }
 }

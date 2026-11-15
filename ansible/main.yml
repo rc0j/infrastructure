@@ -12,11 +12,13 @@
       tags: swapfile
     - role: update_motd
       tags: update_motd
-    - role: reboot
-      tags: reboot
     - role: centreon_monitoring
       tags: centreon_monitoring
+    - role: bitwarden
+      tags: bitwarden
     # OPTIONAL:
+    - role: reboot
+      tags: never, reboot
     - role: backup_proxmox
       tags: never, backup_proxmox
     # - role: syncthing

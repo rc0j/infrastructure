@@ -19,3 +19,4 @@ secrets.tfvars
 *.tfvars.json.backup
 ntfy-notification.env
 *.env
+update_vaultwarden.sh.j2

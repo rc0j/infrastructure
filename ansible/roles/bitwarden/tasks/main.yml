@@ -1,0 +1,103 @@
+---
+- name: Create Vaultwarden user
+  ansible.builtin.user:
+    name: vaultwarden
+    comment: Vaultwarden user is used to handle and deploy Bitwarden. 
+    create_home: yes
+    shell: /bin/bash
+
+- name: Install docker using CURL
+  ansible.builtin.shell: |
+    curl -fsSL https://get.docker.com -o get-docker.sh
+    sh get-docker.sh
+  args:
+    creates: /usr/bin/docker
+
+- name: Disable docker service
+  ansible.builtin.systemd_service:
+    state: stopped
+    enabled: false
+    masked: true
+    name: docker.service
+
+- name: Remove docker socket file
+  ansible.builtin.file:
+    path: /var/run/docker.sock
+    state: absent
+
+- name: Add vaultwarden user to docker group
+  ansible.builtin.user:
+    name: vaultwarden
+    groups: docker
+
+- name: Install uidmap
+  ansible.builtin.apt:
+    name: uidmap
+    state: present
+
+- name: Create a vaultwarden directory
+  ansible.builtin.file:
+    path: /home/vaultwarden/vaultwarden-docker/
+    state: directory
+    mode: '0755'
+    owner: vaultwarden
+    group: vaultwarden
+    
+- name: Copy vaultwarden docker-compose.yml file
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: /home/vaultwarden/vaultwarden-docker/docker-compose.yml
+    owner: vaultwarden
+    group: vaultwarden
+    mode: '0644'
+
+- name: Grab .env file from secrets directory
+  ansible.builtin.template:
+    src: bw-env.j2
+    dest: /home/vaultwarden/vaultwarden-docker/.env
+    owner: vaultwarden
+    group: vaultwarden
+    mode: '0600'
+
+- name: Run docker-compose up for vaultwarden
+  ansible.builtin.shell: |
+    sudo -u vaultwarden docker compose up -d
+  args:
+    chdir: /home/vaultwarden/vaultwarden-docker
+
+- name: Install crontab
+  ansible.builtin.apt:
+    name: cron
+    state: present
+
+- name: Deploy backup crontab
+  ansible.builtin.template:
+    src: cron.j2
+    dest: /tmp/backup_cron.txt
+
+- name: Load crontab file
+  ansible.builtin.shell: |
+    sudo -u vaultwarden crontab /tmp/backup_cron.txt
+  args:
+    creates: /var/spool/cron/crontabs/vaultwarden
+
+- name: Remove temporary crontab file
+  ansible.builtin.file:
+    path: /tmp/backup_cron.txt
+    state: absent
+
+- name: Deploy backup script
+  ansible.builtin.template:
+    src: backup.sh.j2
+    dest: /home/vaultwarden/vaultwarden-docker/backup.sh
+    owner: vaultwarden
+    group: vaultwarden
+    mode: '0700'
+
+- name: Copy update_vaultwarden script
+  ansible.builtin.template:
+    src: update_vaultwarden.sh.j2
+    dest: /home/vaultwarden/vaultwarden-docker/update_vaultwarden.sh
+    owner: vaultwarden
+    group: vaultwarden
+    mode: '0700'

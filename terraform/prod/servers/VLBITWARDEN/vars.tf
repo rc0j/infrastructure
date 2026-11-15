@@ -76,3 +76,4 @@ variable "docker_vm" {
     type = bool
     default = false
 }  
+

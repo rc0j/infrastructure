@@ -60,7 +60,7 @@ the firewall config. ⚠ marks a place where the sources disagree (see
 | VLBITWARDEN | 19299 | orion | 192.168.100.99 ⚠ (tfvars: .96) | 1 / 256 MB / 4 G | debian-template-restore | Vaultwarden |
 | VLNODE01 | 19298 (firewall) | orion | 192.168.100.98 | – (tfvars not in repo) | debian-template-restore | Nginx Proxy Manager, phpIPAM, CouchDB, Syncthing, cAdvisor, Alloy, Komodo Periphery, GitHub Actions runner |
 | VLIMMICH | 192104 | orion | 192.168.100.104 | 4 / 3 GB / 25 G | debian-template-restore | Immich (port 2283) |
-| VLDRIVE (name `VLNEXTCLOUD`) | 192101 | orion | 192.168.100.101 | 2 / 2 GB / 10 G | debian-template-restore | Nextcloud / "docker" host |
+| VLDRIVE (name `VLNEXTCLOUD`) | 192101 | orion | 192.168.100.101 | 2 / 2 GB / 10 G | debian-template-restore | OpenCloud (`:9200`, data on `/data`) |
 | VLADGUARD-DNS1 | 19205 ⚠ (firewall: 192105) | orion | 192.168.100.97 ⚠ (tfvars: .5) | 1 / 1 GB / 6 G | debian-template-restore | AdGuard Home (primary DNS) |
 | VLCENTREON | 192107 | orion-node02 | 192.168.100.107 | 2 / 2 GB / 10 G | template-generic-alma-9.8 | Centreon + Prometheus/Grafana/Loki |
 | VLDNS01 (`dnsprod01`) | 19111 | orion-node02 | 192.168.100.111 | 1 / 512 MB / 6 G | debian-template-restore | Secondary DNS |

@@ -49,3 +49,4 @@
       args:
         executable: /bin/bash
       when: docker_check.rc == 0
+      ignore_errors: true

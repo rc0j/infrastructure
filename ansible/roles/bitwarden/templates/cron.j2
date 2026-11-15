@@ -1,0 +1,8 @@
+# [BITWARDEN] Backup script
+# Every 8 hours 
+# 0 */8 * * * /home/vaultwarden/vaultwarden-docker/backup.sh > /var/log/vw-backup.log 2>&1
+
+# Delete old journalctl logs
+5 4 * * * journalctl --vacuum-time=2d
+
+0 0 * * * cd /home/vaultwarden/vw-backups && /usr/bin/find . -mtime +7 -delete
